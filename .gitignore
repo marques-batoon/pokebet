@@ -1,0 +1,34 @@
+# ===== ENVIRONMENT VARIABLES =====
+# Never commit secrets, API keys, or private keys
+.env
+.env.*
+!.env.example
+
+# ===== NODE =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== HARDHAT =====
+cache/
+artifacts/
+typechain/
+typechain-types/
+
+# ===== BUILD OUTPUTS =====
+dist/
+build/
+out/
+
+# ===== OS FILES =====
+.DS_Store
+Thumbs.db
+
+# ===== EDITOR =====
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
