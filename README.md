@@ -2,7 +2,7 @@
 
 > Stake ETH on real Pokémon Showdown battles. A Node.js oracle watches the battle in real time, detects the winner, and a Solidity smart contract automatically releases the pot — no middleman, no trust required.
 
-**Built by [Marques Batoon](https://github.com/marques-batoon)**
+**Built by [Marques Batoon](https://github.com/marques-batoon) and Dominic Deuz**
 
 ---
 

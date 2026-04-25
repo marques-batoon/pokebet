@@ -1130,7 +1130,7 @@ main {
           <div class="trainer-side">
             <div class="trainer-name" id="p1-trainer">—</div>
             <div class="poke-display">
-              <img id="p1-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="pokemon">
+              <img id="p1-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="pokemon">
             </div>
             <div class="poke-name-label" id="p1-poke">Waiting...</div>
             <div class="poke-hp-bar">
@@ -1145,7 +1145,7 @@ main {
           <div class="trainer-side">
             <div class="trainer-name" id="p2-trainer">—</div>
             <div class="poke-display">
-              <img id="p2-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="pokemon">
+              <img id="p2-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="pokemon">
             </div>
             <div class="poke-name-label" id="p2-poke">Waiting...</div>
             <div class="poke-hp-bar">
@@ -1447,13 +1447,24 @@ const pokeNameMap = {
   'meloetta':648,'genesect':649
 };
 
-function getPokeId(name) {
-  if (!name) return 25;
+const POKEBALL_PLACEHOLDER = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
+
+async function getPokeId(name) {
+  if (!name) return null;
   const clean = name.toLowerCase()
     .replace(/\-[a-z]+$/,'')
     .replace(/[^a-z]/g,'')
     .trim();
-  return pokeNameMap[clean] || 25;
+  if (pokeNameMap[clean]) return pokeNameMap[clean];
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${clean}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    pokeNameMap[clean] = data.id;
+    return data.id;
+  } catch {
+    return null;
+  }
 }
 
 function parseHpPercent(hpStr) {
@@ -1529,13 +1540,15 @@ function handlePSMessage(data) {
         const switcher = parts[2] || '';
         const pokeRaw = (parts[3] || '').split(',')[0].trim();
         const side = switcher.startsWith('p1') ? 'p1' : 'p2';
-        const pokeId = getPokeId(pokeRaw);
         document.getElementById(side + '-poke').textContent = pokeRaw;
-        document.getElementById(side + '-sprite').src =
-          `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`;
         updateHPBar(side, 100);
         const trainerName = document.getElementById(side + '-trainer').textContent;
         addLogLine('↔', `<span class="hl">${trainerName}</span> sent out <span class="move">${pokeRaw}</span>!`);
+        getPokeId(pokeRaw).then(id => {
+          document.getElementById(side + '-sprite').src = id
+            ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
+            : POKEBALL_PLACEHOLDER;
+        });
         break;
       }
 
@@ -1809,8 +1822,12 @@ function watchBattle(matchId) {
   document.getElementById('p2-trainer').textContent = match.p2;
   document.getElementById('p1-poke').textContent = match.poke1.name;
   document.getElementById('p2-poke').textContent = match.poke2.name;
-  document.getElementById('p1-sprite').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${match.poke1.id}.png`;
-  document.getElementById('p2-sprite').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${match.poke2.id}.png`;
+  document.getElementById('p1-sprite').src = match.poke1.id
+    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${match.poke1.id}.png`
+    : POKEBALL_PLACEHOLDER;
+  document.getElementById('p2-sprite').src = match.poke2.id
+    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${match.poke2.id}.png`
+    : POKEBALL_PLACEHOLDER;
   updateHPBar('p1', 100);
   updateHPBar('p2', 100);
 
